@@ -5,15 +5,15 @@ from sqlalchemy import pool
 from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import async_engine_from_config
 
-from src.auth import User
-from src.books import inventory
+from src.auth.model import User
+from src.books.models import inventory
 from sqlmodel import SQLModel
 from src.config import Config
 
 from alembic import context
 
 
-database_url = Config().DATABASE_URL
+database_url = Config.DATABASE_URL
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config

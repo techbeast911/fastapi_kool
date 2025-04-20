@@ -13,7 +13,7 @@ class User(SQLModel, table=True):
     )
     username: str = Field(index=True, unique=True, nullable=False)
     email: str = Field(index=True, unique=True, nullable=False)
-    password: str = Field(nullable=False)
+    password_hash: str = Field(exclude=True, nullable=False)
     first_name: str = Field(nullable=False)
     last_name: str = Field(nullable=False)
     is_verified: bool = Field(default=False)

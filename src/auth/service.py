@@ -10,7 +10,7 @@ class UserService:
         statement = select(User).where(User.email == email)
         result = await session.execute(statement)
         
-        user = result.first()
+        user =  result.scalar_one_or_none()   #result.first()
 
         return user
 

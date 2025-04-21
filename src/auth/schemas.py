@@ -10,6 +10,8 @@ class UserCreateModel(BaseModel):
     username: str = Field(max_length=50, min_length=3)
     email: str = Field(max_length=50)
     password: str = Field(max_length=50, min_length=8)
+    first_name: str = Field(max_length=50, min_length=3)
+    last_name: str = Field(max_length=50, min_length=3)
 
 
 

@@ -5,9 +5,11 @@ from src.books.book_data import books
 from src.books.schemas import Book,BookUpdateModel
 #from src.db import get_db_connection
 from psycopg2.extras import RealDictCursor
+from src.auth.dependencies import AccessTokenBearer
 
 
 book_router = APIRouter()
+
 
 
 

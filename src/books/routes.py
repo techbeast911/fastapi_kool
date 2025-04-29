@@ -1,62 +1,69 @@
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, HTTPException, status,Depends
 from typing import Optional,List,Dict
+from src.db.main import get_session
 
-from src.books.book_data import books
-from src.books.schemas import Book,BookUpdateModel
+from src.books.schemas import Record,RecordCreate,RecordUpdateModel
 #from src.db import get_db_connection
+from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from psycopg2.extras import RealDictCursor
-from src.auth.dependencies import AccessTokenBearer
+from src.books.service import get_records
 
 
 book_router = APIRouter()
-
-
+record_service = get_records()
 
 
 
 # @book_router.get("/",response_model=List[Book])
-# async def get_all_books() -> List[Dict]:
-#     conn= get_db_connection()
-#     cursor = conn.cursor(cursor_factory=RealDictCursor)
-#     cursor.execute("SELECT * FROM users")
-#     users = cursor.fetchall()  # Fetch all rows
-#     return users
+# async def get_all_books(session:AsyncSession = Depends(get_session)) -> List[Dict]:
+    
+#     return books
 
 
-@book_router.post("/",status_code=status.HTTP_201_CREATED)
-async def create_a_book(book_data:Book) -> dict:
-    new_book = book_data.model_dump()
+@book_router.get("/")#,response_model=List[Record])
+async def get_all_records(session:AsyncSession = Depends(get_session)):
+    records = await record_service.get_all_records(session)
+    return records
 
-    books.append(new_book)
-    return new_book 
+# @book_router.post("/", status_code=status.HTTP_201_CREATED)
+# async def create_a_book(record_data: RecordCreate,
+# session:AsyncSession = Depends(get_session)) -> dict:
+#     new_record = await record_service.create_record(record_data,session)
+    
+#     return new_record
 
-@book_router.get("/{book_id}")
-async def get_book(book_id:int) -> dict:
-    for book in books:
-        if book["id"] == book_id:
-            return book
+@book_router.post("/", status_code=status.HTTP_201_CREATED)
+async def create_a_book(record_data: RecordCreate, session: AsyncSession = Depends(get_session)) -> dict:
+    new_record = await record_service.create_record(record_data, session)
+    return new_record  # ✅ JSON-serializable dictionary
 
-    raise HTTPException(status_code=404,detail="Book not found")
 
-@book_router.patch("/{book_id}")
-async def update_books(book_id:int,book_update_data:BookUpdateModel) -> dict:
-    for book in books:
-        if book["id"] == book_id:
-            book["title"] = book_update_data.title
-            book["author"] = book_update_data.author
-            book["publisher"] = book_update_data.publisher
-            book["published_date"] = book_update_data.published_date
-            book["page_count"] = book_update_data.page_count
-            book["language"] = book_update_data.language 
-            return book
+@book_router.get("/{product_serial_no}")
+async def get_book(product_serial_no: int,session:AsyncSession = Depends(get_session)) -> dict:
+    record = await record_service.get_record_by_id(product_serial_no,session)
 
-    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="Book not found")
+    if record:
+        return record
+    else:
+        raise HTTPException(status_code=404, detail="Record not found")
 
-@book_router.delete("/{book_id}")
-async def delete_books(book_id:int,status_code=status.HTTP_204_NO_CONTENT) -> dict:
-    for book in books:
-        if book["id"] == book_id:
-            books.remove(book)
-            return {"message":"Book deleted successfully"}
+@book_router.patch("/{product_serial_no}")
+async def update_books(product_serial_no: int, record_update_data: RecordUpdateModel,
+session:AsyncSession = Depends(get_session)) -> dict:
+    updated_record = await record.service.update_record(product_serial_no,record_update_data,session)
+    
+    if updated_record:
+        return updated_record
+    else:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Record not found")
 
-    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="Book not found")
+@book_router.delete("/{product_serial_no}")
+async def delete_books(product_serial_no: int):
+    record_to_delete = await record_service.delete_record(product_serial_no,session)
+
+    if record_to_delete:
+        return None
+
+    else:
+
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Record Not found")

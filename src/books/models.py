@@ -5,6 +5,7 @@ from uuid import UUID, uuid4
 
 class inventory(SQLModel, table=True):
     __tablename__ = "inventory"
+    __table_args__ = {"schema": "public"}
 
     # id: UUID = Field(
     #     sa_column=Column(pg.UUID, default=uuid4, nullable=False, primary_key=True)
